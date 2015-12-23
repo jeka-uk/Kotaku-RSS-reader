@@ -1,32 +1,36 @@
-package com.example.lenovo.kotaku_rss_reader;
+package com.example.lenovo.kotakurssreader.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.lenovo.kotakurssreader.R;
+import com.example.lenovo.kotakurssreader.common.CommonUtils;
+import com.example.lenovo.kotakurssreader.fragments.RssNewsFragment;
+
+
 public class MainActivity extends AppCompatActivity {
+
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        CommonUtils.startFragmentSlideVerticalDownUp(new RssNewsFragment(), R.id.rss_news_fragment, getSupportFragmentManager());
+
+
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
