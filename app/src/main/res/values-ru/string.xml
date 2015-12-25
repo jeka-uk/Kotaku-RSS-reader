@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kotaku RSS reader</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+
+    <string name="title_information_network">Передача мобильных данных отключена</string>
+    <string name="message_information_network">Включите передачу пакетных данных или воспользуйтесь Wi-Fi для завершения этого действия.</string>
+    <string name="button_ok_information_network">ОК</string>
+    <string name="fragment_rss_button_refresh">Обновить</string>
+    <string name="fragment_rss_button_sort_up">Сортировать по возрастанию</string>
+    <string name="fragment_rss_button_sort_down">Сортировать по убыванию</string>
+</resources>

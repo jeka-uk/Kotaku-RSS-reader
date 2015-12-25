@@ -26,4 +26,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'org.apache.httpcomponents:httpcore:4.4.3'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile files('libs/universal-image-loader-1.9.2.jar')
+    compile 'cc.trity.floatingactionbutton:library:1.0.0'
 }
