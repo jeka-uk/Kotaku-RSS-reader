@@ -86,6 +86,8 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
     View.OnClickListener onSortDown = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            mMainButtonMenu.collapse();
+            sortDown();
 
         }
     };
@@ -94,6 +96,7 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
     View.OnClickListener onSortUp = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            mMainButtonMenu.collapse();
             sortUp();
         }
     };
@@ -102,6 +105,8 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
     View.OnClickListener onRefresh = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            if(mRssItem != null && mRssItem.size() > 0)
+                mRssItem.clear();
             setRssItem(mRssItem);
             new LoadXml().execute(new String[]{Constance.URL_RSS});
             mMainButtonMenu.collapse();
@@ -203,6 +208,9 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
 
         protected void onPostExecute(final List<RssItem> items) {
             if (items != null){
+                if(mRssItem != null && mRssItem.size() > 0)
+                    mRssItem.clear();
+                mRssItem.addAll(items);
                 Log.i(this.getClass().getSimpleName(), items.size() + "");
                 setRssItem(items);
             }
@@ -211,15 +219,31 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
 
 
     private void sortUp(){
-
         Collections.sort(mRssItem, new Comparator<RssItem>() {
             @Override
             public int compare(RssItem o1, RssItem o2) {
                 return o2.getData().compareTo(o1.getData());
             }
         });
-      }
+        setRssItem(mRssItem);
     }
+
+
+    private void sortDown(){
+        Collections.sort(mRssItem, new Comparator<RssItem>() {
+            @Override
+            public int compare(RssItem o1, RssItem o2) {
+                return o1.getData().compareTo(o2.getData());
+            }
+        });
+        setRssItem(mRssItem);
+    }
+
+
+
+    }
+
+
 
 
 
