@@ -13,6 +13,9 @@ import android.support.v4.app.Fragment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -23,6 +26,9 @@ import com.example.lenovo.kotakurssreader.adapters.RssNewsAdapter;
 import com.example.lenovo.kotakurssreader.common.CommonUtils;
 import com.example.lenovo.kotakurssreader.common.Constance;
 import com.example.lenovo.kotakurssreader.common.OnClickTransparent;
+import com.example.lenovo.kotakurssreader.common.SetUrl;
+import com.example.lenovo.kotakurssreader.db.RssItemsCache;
+import com.example.lenovo.kotakurssreader.objectcache.CacheManager;
 import com.example.lenovo.kotakurssreader.rss.RssHandler;
 import com.example.lenovo.kotakurssreader.rss.RssItem;
 
@@ -34,7 +40,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -46,20 +51,22 @@ import cc.trity.floatingactionbutton.FloatingActionButton;
 import cc.trity.floatingactionbutton.FloatingActionsMenu;
 
 
-public class RssNewsFragment extends Fragment implements OnClickTransparent {
+public class RssNewsFragment extends Fragment implements OnClickTransparent, SetUrl {
 
     private ListView mRssListView;
     private RssNewsAdapter mRssNewsAdapter;
     private View mView;
     private FloatingActionsMenu mMainButtonMenu;
-    private FloatingActionButton mSortUp, mSortDown, mRefresh;
-    private List<RssItem> mRssItem = new ArrayList<>();
-
+    private FloatingActionButton mSortUp, mSortDown;
+    private boolean test = false;
+    private CacheManager mCacheManager = new CacheManager();
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_rss_news, container, false);
+        setHasOptionsMenu(true);
+
 
         mRssListView = (ListView) view.findViewById(R.id.result_list_view);
         mView = getActivity().getLayoutInflater().inflate(R.layout.heder_layout,null);
@@ -72,23 +79,28 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
         mSortUp = (FloatingActionButton) view.findViewById(R.id.sort_up);
         mSortUp.setColorNormal(Color.WHITE);
         mSortUp.setOnClickListener(onSortUp);
-        mRefresh = (FloatingActionButton) view.findViewById(R.id.refresh);
-        mRefresh.setColorNormal(Color.WHITE);
-        mRefresh.setOnClickListener(onRefresh);
 
-        new LoadXml().execute(new String[]{Constance.URL_RSS});
-
+        if(!isNetworkAvailable(getActivity()) && mCacheManager.get(getActivity()).size() != 0){
+            setRssItem(mCacheManager.get(getActivity()));
+        }else{
+            new LoadXml().execute(new String[]{Constance.URL_RSS});
+        }
 
         return view;
     }
+
 
 
     View.OnClickListener onSortDown = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             mMainButtonMenu.collapse();
-            sortDown();
-
+            mRssNewsAdapter.sort(new Comparator<RssItemsCache>() {
+                @Override
+                public int compare(RssItemsCache lhs, RssItemsCache rhs) {
+                    return rhs.getData().compareTo(lhs.getData());
+                }
+            });
         }
     };
 
@@ -97,24 +109,18 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
         @Override
         public void onClick(View view) {
             mMainButtonMenu.collapse();
-            sortUp();
-        }
-    };
-
-
-    View.OnClickListener onRefresh = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if(mRssItem != null && mRssItem.size() > 0)
-                mRssItem.clear();
-            setRssItem(mRssItem);
-            new LoadXml().execute(new String[]{Constance.URL_RSS});
-            mMainButtonMenu.collapse();
+            mRssNewsAdapter.sort(new Comparator<RssItemsCache>() {
+                @Override
+                public int compare(RssItemsCache lhs, RssItemsCache rhs) {
+                    return lhs.getData().compareTo(rhs.getData());
+                }
+            });
         }
     };
 
 
     private void startTranspa(){
+        test = true;
         TransparentColorFragment newFragment = new TransparentColorFragment();
         newFragment.setmCloseTranspare(this);
         CommonUtils.startFragmentTraspered(newFragment, R.id.transparent_color_fragment, getFragmentManager());
@@ -165,9 +171,9 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
     }
 
 
-    private void setRssItem(List<RssItem> mRssItem){
+    private void setRssItem(List<RssItemsCache> mRssItem){
         mRssListView.setVisibility(View.VISIBLE);
-        mRssNewsAdapter = new RssNewsAdapter(getActivity(), mRssItem);
+        mRssNewsAdapter = new RssNewsAdapter(getActivity(), mRssItem, this);
         mRssListView.setAdapter(mRssNewsAdapter);
     }
 
@@ -175,6 +181,16 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
     @Override
     public void onClick() {
         mMainButtonMenu.collapse();
+    }
+
+
+    @Override
+    public void setUrl(String url) {
+        if(url != null){
+            WebBrowserFragment mWebBrowserFragment = new WebBrowserFragment();
+            mWebBrowserFragment.setUrl(url);
+            CommonUtils.startFragmentSlideVerticalDownUpWithBackStack(mWebBrowserFragment, R.id.container, getFragmentManager());
+        }
     }
 
 
@@ -190,9 +206,10 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
 
                 url = new URL(feed);
                 RssHandler rh = new RssHandler();
-
                 xr.setContentHandler(rh);
+
                 xr.parse(new InputSource(url.openStream()));
+
                 return rh.getRssItemList();
             } catch (ParserConfigurationException e) {
                 e.printStackTrace();
@@ -208,40 +225,38 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent {
 
         protected void onPostExecute(final List<RssItem> items) {
             if (items != null){
-                if(mRssItem != null && mRssItem.size() > 0)
-                    mRssItem.clear();
-                mRssItem.addAll(items);
                 Log.i(this.getClass().getSimpleName(), items.size() + "");
-                setRssItem(items);
+                Log.i("Create", String.valueOf(items.size()));
+                mCacheManager.clearCahe(getActivity());
+                if(mCacheManager.put(items, getActivity()))
+                    setRssItem(mCacheManager.get(getActivity()));
             }
         }
     }
 
 
-    private void sortUp(){
-        Collections.sort(mRssItem, new Comparator<RssItem>() {
-            @Override
-            public int compare(RssItem o1, RssItem o2) {
-                return o2.getData().compareTo(o1.getData());
-            }
-        });
-        setRssItem(mRssItem);
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_refresh:
+                mMainButtonMenu.collapse();
+                if(isNetworkAvailable(getActivity())) {
+                    new LoadXml().execute(new String[]{Constance.URL_RSS});
+                }else{
+                    informationConnection();
+                }
+                return true;
+        }
 
-    private void sortDown(){
-        Collections.sort(mRssItem, new Comparator<RssItem>() {
-            @Override
-            public int compare(RssItem o1, RssItem o2) {
-                return o1.getData().compareTo(o2.getData());
-            }
-        });
-        setRssItem(mRssItem);
+        return false;
     }
-
-
-
-    }
+}
 
 
 

@@ -21,6 +21,15 @@ public class CommonUtils {
         frTra.commit();
     }
 
+    public static void startFragmentSlideVerticalDownUpWithBackStack(Fragment newFragment, int containerViewId, FragmentManager fragmentManager){
+        FragmentTransaction frTra = fragmentManager.beginTransaction();
+        frTra.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_in_down);
+        frTra.add(containerViewId, newFragment);
+        frTra.addToBackStack("web");
+        frTra.commit();
+    }
+
+
 
     public static String getDataFormat(String data){
         return data.substring(data.indexOf("The,")+5, data.indexOf("GMT")-1);
