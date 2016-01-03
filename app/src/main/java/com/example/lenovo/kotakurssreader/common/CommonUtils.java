@@ -30,7 +30,6 @@ public class CommonUtils {
     }
 
 
-
     public static String getDataFormat(String data){
         return data.substring(data.indexOf("The,")+5, data.indexOf("GMT")-1);
     }
@@ -54,18 +53,4 @@ public class CommonUtils {
         frTra.addToBackStack("transpare");
         frTra.commit();
     }
-
-
-
-
-
-    /* Matcher matcher=Pattern.compile("<a\\b.*?\\shref\\s*=\\s*(\"|')(.*?)(\\1)").matcher(description);
-                            while (matcher.find())
-                            System.out.println("Href: " + matcher.group(2));*/
-
-    /*Matcher matcher = Pattern.compile("<img src=\"([^\"]+)").matcher(description);
-    while (matcher.find()) {
-        System.out.println("img url: " + matcher.group(1));
-    }*/
-
 }

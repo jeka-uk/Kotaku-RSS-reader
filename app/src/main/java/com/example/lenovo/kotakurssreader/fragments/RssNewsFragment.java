@@ -39,8 +39,8 @@ import org.xml.sax.XMLReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -58,8 +58,7 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent, Set
     private View mView;
     private FloatingActionsMenu mMainButtonMenu;
     private FloatingActionButton mSortUp, mSortDown;
-    private boolean test = false;
-    private CacheManager mCacheManager = new CacheManager();
+    private CacheManager mCacheManager;
 
     @Nullable
     @Override
@@ -80,15 +79,21 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent, Set
         mSortUp.setColorNormal(Color.WHITE);
         mSortUp.setOnClickListener(onSortUp);
 
-        if(!isNetworkAvailable(getActivity()) && mCacheManager.get(getActivity()).size() != 0){
-            setRssItem(mCacheManager.get(getActivity()));
-        }else{
+        mCacheManager = new CacheManager();
+
+        if(isNetworkAvailable(getActivity()) && !mCacheManager.getLustUpdateCache(getActivity(), new Date()) && mCacheManager.get(getActivity()).size() == 0){
             new LoadXml().execute(new String[]{Constance.URL_RSS});
+            Log.i(getClass().getName(), "Download Rss news from Web: ");
+        }else if(mCacheManager.get(getActivity()).size() != 0 && !mCacheManager.getLustUpdateCache(getActivity(), new Date())){
+            setRssItem(mCacheManager.get(getActivity()));
+            Log.i(getClass().getName(), "Download Rss news from Cache: ");
+        }else if(isNetworkAvailable(getActivity()) && mCacheManager.getLustUpdateCache(getActivity(), new Date())){
+            new LoadXml().execute(new String[]{Constance.URL_RSS});
+            Log.i(getClass().getName(), "Download Rss news from Web after timeout: ");
         }
 
         return view;
     }
-
 
 
     View.OnClickListener onSortDown = new View.OnClickListener() {
@@ -120,7 +125,6 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent, Set
 
 
     private void startTranspa(){
-        test = true;
         TransparentColorFragment newFragment = new TransparentColorFragment();
         newFragment.setmCloseTranspare(this);
         CommonUtils.startFragmentTraspered(newFragment, R.id.transparent_color_fragment, getFragmentManager());
@@ -248,6 +252,7 @@ public class RssNewsFragment extends Fragment implements OnClickTransparent, Set
                 mMainButtonMenu.collapse();
                 if(isNetworkAvailable(getActivity())) {
                     new LoadXml().execute(new String[]{Constance.URL_RSS});
+                    Log.i(getClass().getName(), "Download Rss news from Web query user: ");
                 }else{
                     informationConnection();
                 }

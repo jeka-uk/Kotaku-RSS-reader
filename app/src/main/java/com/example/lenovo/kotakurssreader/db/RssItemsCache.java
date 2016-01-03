@@ -9,19 +9,14 @@ public class RssItemsCache {
 
     @DatabaseField(generatedId = true)
     private int id;
-
     @DatabaseField
     private String title;
-
     @DatabaseField
     private String linkUrl;
-
     @DatabaseField
     private String description;
-
     @DatabaseField
     private String imageUrl;
-
     @DatabaseField
     private String data;
 

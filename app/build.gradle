@@ -41,7 +41,8 @@ dependencies {
     compile 'cc.trity.floatingactionbutton:library:1.0.0'
     compile files('libs/disklrucache-1.0.0-sources.jar')
     compile files('libs/gson-2.5-sources.jar')
-
     compile 'com.j256.ormlite:ormlite-android:4.45'
     compile 'com.j256.ormlite:ormlite-core:4.45'
+    compile 'joda-time:joda-time:2.3'
+
 }

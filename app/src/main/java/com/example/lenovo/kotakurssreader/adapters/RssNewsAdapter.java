@@ -40,13 +40,9 @@ public class RssNewsAdapter extends ArrayAdapter<RssItemsCache> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.rss_item_layout, parent, false);
-
         }
-
-        convertView.setTag(position);
 
         mTitle = (TextView) convertView.findViewById(R.id.item_name_title);
         mData = (TextView) convertView.findViewById(R.id.item_data);

@@ -19,9 +19,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private Context context;
     private static final String DATABASE_NAME = Constance.NAME_LOCAL_DB;
 
-
-    private Dao<RssItemsCache, Integer> rssItemDao = null;
     private RuntimeExceptionDao<RssItemsCache, Integer> rssItemRuntimeDAO = null;
+    private RuntimeExceptionDao<TimesAddRssNews, Integer> timesAddRssNewsDAO = null;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, Constance.DATABASE_VERSION);
@@ -33,6 +32,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase, ConnectionSource connectionSource) {
         try {
             TableUtils.createTable(connectionSource, RssItemsCache.class);
+            TableUtils.createTable(connectionSource, TimesAddRssNews.class);
         } catch (SQLException e){
             Log.e(DatabaseHelper.class.getName(), "Unable to create datbases", e);
         }
@@ -43,19 +43,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, ConnectionSource connectionSource, int oldVer, int newVer) {
         try {
             TableUtils.dropTable(connectionSource, RssItemsCache.class, true);
-            onCreate(sqLiteDatabase,connectionSource);
+            TableUtils.dropTable(connectionSource, TimesAddRssNews.class, true);
+            onCreate(sqLiteDatabase, connectionSource);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Unable to upgrade database from version " + oldVer + " to new "
                     + newVer, e);
         }
-    }
-
-
-    public Dao<RssItemsCache, Integer> getDao() throws SQLException {
-        if (rssItemDao == null) {
-            rssItemDao = getDao(RssItemsCache.class);
-        }
-        return rssItemDao;
     }
 
 
@@ -67,12 +60,18 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
 
+    public RuntimeExceptionDao<TimesAddRssNews, Integer> getTimesAddRssNewsExceptionDao(){
+        if(timesAddRssNewsDAO == null){
+            timesAddRssNewsDAO = getRuntimeExceptionDao(TimesAddRssNews.class);
+        }
+        return timesAddRssNewsDAO;
+    }
+
+
     @Override
     public void close() {
         super.close();
         rssItemRuntimeDAO = null;
-
+        timesAddRssNewsDAO = null;
     }
-
-
 }
